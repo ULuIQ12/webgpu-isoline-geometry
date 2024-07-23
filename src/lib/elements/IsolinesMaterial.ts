@@ -1,4 +1,6 @@
-import { abs, dot, EPSILON, float, If, MeshStandardNodeMaterial, mx_fractal_noise_float, mx_fractal_noise_vec3, Node, normalLocal, normalView, oscSquare, positionWorld, ShaderNode, ShaderNodeObject, tslFn, uniform, UniformNode, VarNode, vec3 } from "three/examples/jsm/nodes/Nodes.js";
+// @ts-nocheck
+// cutting the Typescript linting for this file, as it seems a bit too strict for the TSL code
+import { abs, dot, float, If, MeshStandardNodeMaterial, mx_fractal_noise_vec3, normalLocal, normalView, oscSquare, positionWorld, ShaderNodeObject, tslFn, UniformNode, VarNode, vec3 } from "three/examples/jsm/nodes/Nodes.js";
 
 export class IsolinesMaterial extends MeshStandardNodeMaterial {
     uWireFrame:ShaderNodeObject<UniformNode<unknown>>;
@@ -57,17 +59,14 @@ export class IsolinesMaterial extends MeshStandardNodeMaterial {
 				const band = oscSquare( this.heightNode(positionWorld.xyz.add(smallNoise)).mul(2).div(this.uLayerHeight) ).add(1.0).mul(0.25).oneMinus();
 				ocol.mulAssign(band);
 			});
-            /*
-            const grain = mx_fractal_noise_float(positionWorld.mul(100.0), 1, 2, 0.5, 0.5).add(0.5).mul(0.5).oneMinus();
-            ocol.mulAssign(grain);
-            */
+
 		});
 		
 		return ocol;
 	});
 
     customNormalNode = tslFn(() => {
-        // adding graininess to the normal
+        // adding graininess to the normal for a bit of texture
 		const norm = normalView.xyz.toVar();
 		If( this.uWireFrame.equal(0), () => {
 			const st = positionWorld.mul(100.0);

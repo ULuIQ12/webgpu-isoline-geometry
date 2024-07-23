@@ -36,8 +36,9 @@ export default function IntroModal({
                         <div className="pb-2">
                             <div className="text-lg">Controls</div>
                             <li><b>Left click</b> to rotate the camera</li>
-                            <li>Right click to pan the viewport</li>
-                            <li>Wheel to zoom</li>
+                            <li><b>Right click</b> to pan the viewport</li>
+                            <li><b>Wheel</b> to zoom</li>
+                            <li>Press <b>SPACE</b> to toggle UI visibility</li>
                         </div>
                         
                         <div className="pb-2">Play with the sliders, click the buttons, and Have fun!</div>

@@ -73,11 +73,6 @@ export class Palettes {
 
     ]);
 
-    /*static pinkBlueMirror = uniforms([
-        const nb:number = 16;
-        const pink = new Color(0xff0066);
-    ]);
-    */
 
     static get pinkBlueMirror() {
         const colors = [];

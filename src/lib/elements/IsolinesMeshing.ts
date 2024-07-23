@@ -1,14 +1,15 @@
+
+// @ts-nocheck
+// cutting the Typescript linting for this file, as it seems a bit too strict for the TSL code
 import { IAnimatedElement } from "../interfaces/IAnimatedElement";
 import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
-import { AmbientLight, Box2, Box3, BoxGeometry, BufferAttribute, BufferGeometry, CapsuleGeometry, Color, DirectionalLight, DirectionalLightShadow, DynamicDrawUsage, EquirectangularReflectionMapping, Float32BufferAttribute, Fog, Group, InstancedBufferAttribute, InstancedBufferGeometry, InstancedMesh, MathUtils, Mesh, MeshBasicMaterial, MeshNormalMaterial, Object3D, OrthographicCamera, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Quaternion, Raycaster, Scene, SphereGeometry, SpotLight, StaticDrawUsage, StaticReadUsage, Uint16BufferAttribute, Uint32BufferAttribute, Vector2, Vector3, Vector4 } from "three";
+import { BufferGeometry, DirectionalLight, DirectionalLightShadow, EquirectangularReflectionMapping,Group, Mesh, PerspectiveCamera, Plane, Scene, Vector3, Vector4 } from "three";
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
-import PostProcessing from "three/examples/jsm/renderers/common/PostProcessing.js";
 import { Root } from "../Root";
-import { cameraProjectionMatrix, cameraViewMatrix, loop, color, cos, float, floor, If, instanceIndex, mat3, max, MeshBasicNodeMaterial, MeshStandardNodeMaterial, min, modelViewMatrix, modelWorldMatrix, mx_fractal_noise_float, positionGeometry, positionLocal, pow, sin, SpriteNodeMaterial, storage, sub, timerDelta, timerLocal, tslFn, uniform, uniforms, vec2, vec3, vec4, uint, cond, int, mix, timerGlobal, positionWorld, mx_fractal_noise_vec3, normalLocal, normalView, pass, mul, mx_worley_noise_float, oscSine, discard, mx_fractal_noise_vec2, oscSquare, dot, abs } from "three/examples/jsm/nodes/Nodes.js";
+import { loop, color, float, If, instanceIndex, max, MeshStandardNodeMaterial, min,mx_fractal_noise_float, pow, storage, sub, tslFn, uniform, uniforms, vec3, vec4, cond, int, mix, timerGlobal, positionWorld, mul, oscSine} from "three/examples/jsm/nodes/Nodes.js";
 import { OrbitControls, RGBELoader } from "three/examples/jsm/Addons.js";
 import { Pointer } from "../utils/Pointer";
 import StorageBufferAttribute from "three/examples/jsm/renderers/common/StorageBufferAttribute.js";
-import { sdRoundedX } from "../nodes/DistanceFunctions";
 import { IsolinesMaterial } from "./IsolinesMaterial";
 import { Palettes } from "./Palettes";
 
@@ -20,13 +21,13 @@ export class IsolinesMeshing implements IAnimatedElement {
 	gui: GUI;
 	pointerHandler: Pointer;
 
-	
+
 	constructor(scene: Scene, camera: PerspectiveCamera, controls: OrbitControls, renderer: WebGPURenderer) {
 		this.scene = scene;
 		this.camera = camera;
 		this.controls = controls;
 		this.controls.enableDamping = true;
-		this.controls.dampingFactor = 0.15;
+		this.controls.dampingFactor = 0.1;
 		this.camera.position.set(0, 30, -100);
 		this.camera.updateMatrixWorld();
 		this.renderer = renderer;
@@ -40,21 +41,21 @@ export class IsolinesMeshing implements IAnimatedElement {
 	async init() {
 
 		this.createLights();
-		// this uniform buffer seems to need to be initialized at the maximum size i'm going to use at first for the rest of palettes to work correctly
+		// this uniform buffer needs to be initialized at the maximum size i'm going to use at first for the rest of palettes to work correctly
 		this.layerColors.array = Palettes.getGrayGradient(128).array;
 		this.uNbColors.value = this.layerColors.array.length;
 
 		await this.initMesh();
 
 		const scene: Scene = this.scene;
+		// https://polyhaven.com/a/table_mountain_2_puresky
 		const texture = await new RGBELoader().setPath('./assets/hdr/').loadAsync('table_mountain_2_puresky_2k.hdr', (progress) => {
-			console.log( "Skybox load progress", Math.round(progress.loaded / progress.total * 100) + "%");
+			console.log("Skybox load progress", Math.round(progress.loaded / progress.total * 100) + "%");
 		});
 		texture.mapping = EquirectangularReflectionMapping;
 		scene.background = texture;
 		scene.environment = texture;
 
-		
 		Root.registerAnimatedElement(this);
 		this.initGUI();
 
@@ -101,7 +102,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 		"shibuya",
 		"tutti",
 		"earthy",
-		"gray", 
+		"gray",
 		"blackWhite",
 		"mondrian",
 		"pinkBlueMirror"
@@ -114,7 +115,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 		infoFolder.domElement.children[1].append("Field marked with * have an influence on performances, adjust with that in mind");
 		//infoFolder.add(this, 'infos')
 		const noiseFolder = this.gui.addFolder("Noise");
-		
+
 		noiseFolder.add(this.uScrollTimeScale, 'value', 0.0, 5.0).name("Scroll Time Scale");
 		noiseFolder.add(this.uScrollSpeedX, 'value', -0.3, 0.3).name("Scroll Speed X");
 		noiseFolder.add(this.uScrollSpeedY, 'value', -0.3, 0.3).name("Scroll Speed Y");
@@ -124,11 +125,11 @@ export class IsolinesMeshing implements IAnimatedElement {
 		noiseFolder.add(this.uNoiseScaleZ, 'value', 0.1, 5.0).name("Noise scale Z");
 		noiseFolder.add(this.uFrequency, 'value', 0.001, 0.02).name("Noise frequency");
 		noiseFolder.add(this.uOctaves, 'value', 1.0, 9.0).name("Noise octaves *");
-		
+
 
 		const generationFolder = this.gui.addFolder("Generation");
 		generationFolder.add(this.uNbLayers, 'value', 4, 128).name("Nb layers *").onChange((v) => {
-			if( this.palette === "gray" ) {
+			if (this.palette === "gray") {
 				this.layerColors.array = Palettes.getGrayGradient(v).array;
 				this.uNbColors.value = this.layerColors.array.length;
 			}
@@ -138,7 +139,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 			this.uTiling.value = this.tilings.indexOf(v);
 		});
 
-		
+
 		const aspectFolder = this.gui.addFolder("Aspect");
 		aspectFolder.add(this.mainMaterial, 'wireframe').name('Wireframe').onChange((v) => {
 			this.sideMaterial.wireframe = v;
@@ -154,7 +155,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 		});
 		aspectFolder.add(this, 'useBands').name("Dark bands *").onChange((v) => {
 			this.uUseBands.value = v ? 1 : 0;
-		});		
+		});
 
 		aspectFolder.add(this.uRoughness, 'value', 0.0, 1.0).name("Roughness");
 		aspectFolder.add(this.uMetalness, 'value', 0.0, 1.0).name("Metalness");
@@ -163,7 +164,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 			this.uRotatePalette.value = v ? 1 : 0;
 		});
 		aspectFolder.add(this.uPaletteRotSpeed, 'value', 0.0, 20.0).name("Pal. rotation speed");
-		
+
 
 		const cursorFolder = this.gui.addFolder("Cursor");
 		cursorFolder.add(this, 'useCursor').name("Use cursor").onChange((v) => {
@@ -174,15 +175,15 @@ export class IsolinesMeshing implements IAnimatedElement {
 
 		document.addEventListener('keydown', (e) => {
 			if (e.code === 'Space') {
-				if( this.gui._hidden)
+				if (this.gui._hidden)
 					this.gui.show();
-				else 
+				else
 					this.gui.hide();
 			}
 		});
 	}
 
-	setPalette(paletteName:string = "default") {
+	setPalette(paletteName: string = "default") {
 		switch (paletteName) {
 			case "default":
 				this.layerColors.array = Palettes.defaultColors.array;
@@ -212,7 +213,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 				this.layerColors.array = Palettes.pinkBlueMirror.array;
 				break;
 		}
-		this.uNbColors.value = this.layerColors.array.length ;
+		this.uNbColors.value = this.layerColors.array.length;
 	}
 
 	lightGroup: Group = new Group();
@@ -220,7 +221,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 	createLights() {
 
 		this.dirLight = new DirectionalLight(0xffffff, 3);
-		this.dirLight.position.set(this.gridWidth * .5, this.gridWidth*.5, this.gridWidth*.5).multiplyScalar(this.cellSize);
+		this.dirLight.position.set(this.gridWidth * .5, this.gridWidth * .5, this.gridWidth * .5).multiplyScalar(this.cellSize);
 		this.dirLight.castShadow = true;
 		const s: DirectionalLightShadow = this.dirLight.shadow;
 		const sCamSize: number = 175;
@@ -239,13 +240,11 @@ export class IsolinesMeshing implements IAnimatedElement {
 
 	}
 
-	//nbLayers: number = 32;
+
 	uNbLayers = uniform(32);
-	//layerHeight: number = 0.1;
 	uLayerHeight = uniform(1);
 	gridWidth: number = 256;
 	cellSize: number = 1;
-
 
 	nbTris: number = this.gridWidth * this.gridWidth * 2;
 	maxSubdiv: number = 60;
@@ -255,7 +254,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 	nbBigNormals: number = this.nbTris * this.maxSubdiv;
 	nbBigColors: number = this.nbTris * this.maxSubdiv;
 
-	nbSideQuads: number = (this.gridWidth-1) * 4;
+	nbSideQuads: number = (this.gridWidth - 1) * 4;
 	nbSideVertices: number = this.nbSideQuads * 6;
 
 	sbaVertices: StorageBufferAttribute;
@@ -271,29 +270,12 @@ export class IsolinesMeshing implements IAnimatedElement {
 	sbaSideNormals: StorageBufferAttribute;
 	sbaSideColors: StorageBufferAttribute;
 
-
 	mainMaterial: MeshStandardNodeMaterial;
 	sideMaterial: MeshStandardNodeMaterial;
 	mainMesh: Mesh;
 	sideMesh: Mesh;
 	async initMesh() {
-
-		/*
-		// base grid mesh
-		this.sbaVertices = new StorageBufferAttribute(this.nbBaseVertices, 4);
-		this.sbaNormals = new StorageBufferAttribute(this.nbBaseNormals, 4);
-		const testGeom: BufferGeometry = new BufferGeometry();
-		testGeom.setAttribute("position", this.sbaVertices);
-		testGeom.setAttribute("normal", this.sbaNormals);
-		const testMat: MeshStandardNodeMaterial = new MeshStandardNodeMaterial();
-		testMat.opacity = 0.1;
-		testMat.wireframe = true;
-		testMat.transparent = true;
-		const testMesh: Mesh = new Mesh(testGeom, testMat);
-		testMesh.frustumCulled = false;
-		this.scene.add(testMesh);
-		*/
-
+		// main mesh
 		this.sbaBigVertices = new StorageBufferAttribute(this.nbBigVertices, 4);
 		this.sbaBigNormals = new StorageBufferAttribute(this.nbBigNormals, 4);
 		this.sbaBigColors = new StorageBufferAttribute(this.nbBigColors, 4);
@@ -306,11 +288,11 @@ export class IsolinesMeshing implements IAnimatedElement {
 		const isoMat: IsolinesMaterial = new IsolinesMaterial(
 			this.gridWidth,
 			this.cellSize,
-			this.uWireFrame, 
-			this.uLayerHeight, 
-			this.uUseBands, 
-			this.getHeight.bind(this), 
-			this.uRoughness, 
+			this.uWireFrame,
+			this.uLayerHeight,
+			this.uUseBands,
+			this.getHeight.bind(this),
+			this.uRoughness,
 			this.uMetalness
 		);
 		this.mainMaterial = isoMat;
@@ -345,6 +327,23 @@ export class IsolinesMeshing implements IAnimatedElement {
 		sideMesh.frustumCulled = false;
 		this.scene.add(sideMesh);
 		this.sideMesh = sideMesh;
+
+		/*
+		// base grid mesh
+		this.sbaVertices = new StorageBufferAttribute(this.nbBaseVertices, 4);
+		this.sbaNormals = new StorageBufferAttribute(this.nbBaseNormals, 4);
+		const testGeom: BufferGeometry = new BufferGeometry();
+		testGeom.setAttribute("position", this.sbaVertices);
+		testGeom.setAttribute("normal", this.sbaNormals);
+		const testMat: MeshStandardNodeMaterial = new MeshStandardNodeMaterial();
+		testMat.opacity = 0.1;
+		testMat.wireframe = true;
+		testMat.transparent = true;
+		const testMesh: Mesh = new Mesh(testGeom, testMat);
+		testMesh.frustumCulled = false;
+		this.scene.add(testMesh);
+		*/
+
 
 		await this.renderer.computeAsync(this.computeTriangles);
 		await this.renderer.computeAsync(this.computeSides);
@@ -642,7 +641,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 	computeSides = tslFn(() => {
 
 		const cs = float(this.cellSize);
-		const gw = float(this.gridWidth-1); // margin 
+		const gw = float(this.gridWidth - 1); // margin 
 
 		const side = instanceIndex.div(gw);
 		const hgw = gw.mul(.5);
@@ -676,7 +675,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 			dir.assign(vec3(0.0, 0.0, cs.negate()));
 		});
 
-		
+
 		//const h1 = this.getHeight(vec3(px, 0.0, pz)).div(this.uLayerHeight).floor().mul(this.uLayerHeight).toVar();
 		//const h2 = this.getHeight(vec3(px, 0.0, pz).add(dir)).div(this.uLayerHeight).floor().mul(this.uLayerHeight).toVar();
 		// not rounding the heights looks better
@@ -731,15 +730,16 @@ export class IsolinesMeshing implements IAnimatedElement {
 		const dir = pointerPos.xz.sub(p.xz);
 		const dist = min(pointerMaxDistance, dir.length()).div(pointerMaxDistance);
 		//const dist2 = sdRoundedX(dir.rotateUV(timerGlobal(.5), vec2(0.0)), pointerMaxDistance, pointerMaxDistance.mul(0.5)).div(pointerMaxDistance).remapClamp(-1, 0, 0, 1);
-		const timeFac = oscSine(timerGlobal(.1)).add(1.0).mul(0.5).mul(1.0).add(1.0);
+		const timeFac = oscSine(timerGlobal(.1)).add(1.0).mul(0.5).mul(1.0).add(1.0); // some variation over time for fun
 		const pInfluence = cond(this.uUseCursor.equal(0), 0, dist.oneMinus().mul(pointerMaxDistance.mul(.5).mul(timeFac)));
 
 		const st = vec3(p.x, 0.0, p.z).mul(this.uFrequency).toVar();
+		
 		st.x.mulAssign(this.uNoiseScaleX);
 		st.z.mulAssign(this.uNoiseScaleZ);
+		cond(this.uRotationSpeed.greaterThan(0), st.xz.rotateUVAssign(this.uScrollOffset.w, this.uScrollOffset.xz.negate()), 0);
 		st.addAssign(this.uScrollOffset.xyz);
-		//st.xz.rotateUVAssign(this.uScrollOffset.w, this.uScrollOffset.xy);
-		cond( this.uRotationSpeed.equal(0), st.xz.rotateUVAssign(this.uScrollOffset.w, this.uScrollOffset.xy), 0 ) ;
+		
 		return max(0.0, mx_fractal_noise_float(st, int(this.uOctaves), 2.0, 0.75, 0.5).add(0.5).mul(this.uNbLayers).mul(this.uLayerHeight).sub(pInfluence));
 	});
 

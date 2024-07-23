@@ -3,7 +3,7 @@ import { OrbitControls, TrackballControls } from "three/examples/jsm/Addons.js";
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
 import PostProcessing from "three/examples/jsm/renderers/common/PostProcessing.js";
 import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
-import { cond, pass, uniform, viewportTopLeft } from "three/examples/jsm/nodes/Nodes.js";
+import { pass, uniform, viewportTopLeft } from "three/examples/jsm/nodes/Nodes.js";
 
 import { IAnimatedElement } from "./interfaces/IAnimatedElement";
 import { IsolinesMeshing } from "./elements/IsolinesMeshing";
@@ -81,7 +81,7 @@ export class Root {
     scene: Scene = new Scene();
     fx:IsolinesMeshing;
     async initScene() {
-        this.fx = new IsolinesMeshing(this.scene, this.camera, this.controls, this.renderer!);
+        this.fx = new IsolinesMeshing(this.scene, this.camera, this.controls as OrbitControls, this.renderer!);
         await this.fx.init();
        
     }
