@@ -11,8 +11,8 @@ Visit https://ulucode.com/random/webgputests/isolines/ to play!
 Requires a browser with WebGPU support.
 
 ## TSL 
-Most of the important code, regarding TSL and the implementation of the algorithm is in [/src/lib/elements/IsolinesMeshing.ts](https://github.com/ULuIQ12/tsl-particles-of-a-thousand-faces/blob/main/src/lib/elements/ParticlesLife.ts)
-The file is heavily commented and uses descriptive variable names.
+Most of the important code, regarding TSL and the implementation of the algorithm is in [/src/lib/elements/IsolinesMeshing.ts](https://github.com/ULuIQ12/webgpu-isoline-geometry/blob/main/src/lib/elements/IsolinesMeshing.ts)
+The file is commented and uses descriptive variable names.
 It is partially typed, but don't worry if you know nothing about Typescript : you can safely ignore it (although I would encourage you to look into it).
 
 ## Disclaimer
@@ -75,10 +75,12 @@ This will create an optimized build of the project in the `dist` directory.
 - UI Management uses LilGui and a bit of React https://react.dev/
 - UI components use TailwindCSS https://tailwindcss.com/ 
 - SDF functions and other utilities from Inigo Quilez https://iquilezles.org/
+- Skybox is https://polyhaven.com/a/table_mountain_2_puresky by Greg Zaal and Jarod Guest
 
 ## Resources 
 - Three.js WebGPU examples : https://threejs.org/examples/?q=webgpu
 - Three.js TSL documentation : https://github.com/mrdoob/three.js/wiki/Three.js-Shading-Language
+
 
 
 
