@@ -33,7 +33,7 @@ To start the development environment for this project, follow these steps:
 1. Clone the repository to your local machine:
 
   ```bash
-  git clone https://github.com/ULuIQ12/tsl-particles-of-a-thousand-faces.git
+  git clone https://github.com/ULuIQ12/webgpu-isoline-geometry.git
   ```
 
 2. Navigate to the project directory:
