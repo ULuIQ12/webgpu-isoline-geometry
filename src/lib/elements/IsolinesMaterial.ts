@@ -44,8 +44,9 @@ export class IsolinesMaterial extends MeshStandardNodeMaterial {
 
     customColorNode = tslFn(() => {
 		const ocol = vec3(1.0).toVar();
-        const margin = float(0.1);
+        
 		If( this.uWireFrame.equal(0), () => {
+            const margin = float(0.1);
 			const hgw = float(this.gridWidth*.5*this.cellSize).sub(this.cellSize*.5); // remove jagged edge due to tiling
 			positionWorld.x.lessThan(hgw.negate().add(margin)).discard();
 			positionWorld.x.greaterThan(hgw.sub(margin)).discard();

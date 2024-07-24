@@ -37,7 +37,6 @@ export class IsolinesMeshing implements IAnimatedElement {
 		this.gui = new GUI();
 	}
 
-	testCube: Mesh;
 	async init() {
 
 		this.createLights();
@@ -47,24 +46,26 @@ export class IsolinesMeshing implements IAnimatedElement {
 
 		await this.initMesh();
 
-		const scene: Scene = this.scene;
-		// https://polyhaven.com/a/table_mountain_2_puresky
+		// load the bg / envmap // https://polyhaven.com/a/table_mountain_2_puresky
 		const texture = await new RGBELoader().setPath('./assets/hdr/').loadAsync('table_mountain_2_puresky_2k.hdr', (progress) => {
 			console.log("Skybox load progress", Math.round(progress.loaded / progress.total * 100) + "%");
 		});
 		texture.mapping = EquirectangularReflectionMapping;
-		scene.background = texture;
-		scene.environment = texture;
+		this.scene.background = texture;
+		this.scene.environment = texture;
 
+		// plug the main animation loop
 		Root.registerAnimatedElement(this);
+
 		this.initGUI();
 
 		// palette is set back to default after a few frames , in Root.ts / update 
 	}
 
-	uNbColors = uniform(8);
-	layerColors = uniforms([]);
-	uScrollTimeScale = uniform(1.0);
+	uNbColors = uniform(8); // number of colors in the current palette
+	layerColors = uniforms([]); // the colors of the palette
+
+	uScrollTimeScale = uniform(1.0); // 
 	uScrollSpeedX = uniform(0.0);
 	uScrollSpeedY = uniform(-0.01);
 	uScrollSpeedZ = uniform(0.01);
@@ -72,17 +73,20 @@ export class IsolinesMeshing implements IAnimatedElement {
 	uNoiseScaleX = uniform(1.0);
 	uNoiseScaleZ = uniform(1.0);
 	uScrollOffset = uniform(new Vector4(0.0, 0.0, 0.0, 0.0));
+
 	uFrequency = uniform(0.01);
+	uOctaves = uniform(4.0);
+
 	useCursor: boolean = false;
 	uUseCursor = uniform(0);
 	uCursorSize = uniform(20);
-	uOctaves = uniform(4.0);
 
-	tiling: string = "Triangles";
+	
 	tilings = [
 		"Triangles",
 		"Quads",
 	]
+	tiling: string = this.tilings[0];
 	uTiling = uniform(0.0);
 	hideWalls: boolean = false;
 	rotatePalette: boolean = false;
@@ -95,7 +99,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 	uRoughness = uniform(0.8);
 	uMetalness = uniform(0.1);
 
-	palette: string = "default";
+	
 	palettes = [
 		"default",
 		"rainbow",
@@ -107,15 +111,14 @@ export class IsolinesMeshing implements IAnimatedElement {
 		"mondrian",
 		"pinkBlueMirror"
 	];
+	palette: string = this.palettes[0];
 
 	infos: string = "Field marked with * are GPU intensive, adjust with that in mind";
 	initGUI() {
-		//this.gui.domElement.style.width = "300px";
 		const infoFolder = this.gui.addFolder("Info");
 		infoFolder.domElement.children[1].append("Field marked with * have an influence on performances, adjust with that in mind");
-		//infoFolder.add(this, 'infos')
+		
 		const noiseFolder = this.gui.addFolder("Noise");
-
 		noiseFolder.add(this.uScrollTimeScale, 'value', 0.0, 5.0).name("Scroll Time Scale");
 		noiseFolder.add(this.uScrollSpeedX, 'value', -0.3, 0.3).name("Scroll Speed X");
 		noiseFolder.add(this.uScrollSpeedY, 'value', -0.3, 0.3).name("Scroll Speed Y");
@@ -125,7 +128,6 @@ export class IsolinesMeshing implements IAnimatedElement {
 		noiseFolder.add(this.uNoiseScaleZ, 'value', 0.1, 5.0).name("Noise scale Z");
 		noiseFolder.add(this.uFrequency, 'value', 0.001, 0.02).name("Noise frequency");
 		noiseFolder.add(this.uOctaves, 'value', 1.0, 9.0).name("Noise octaves *");
-
 
 		const generationFolder = this.gui.addFolder("Generation");
 		generationFolder.add(this.uNbLayers, 'value', 4, 128).name("Nb layers *").onChange((v) => {
@@ -138,7 +140,6 @@ export class IsolinesMeshing implements IAnimatedElement {
 		generationFolder.add(this, 'tiling', this.tilings).name("Tiling").onChange((v) => {
 			this.uTiling.value = this.tilings.indexOf(v);
 		});
-
 
 		const aspectFolder = this.gui.addFolder("Aspect");
 		aspectFolder.add(this.mainMaterial, 'wireframe').name('Wireframe').onChange((v) => {
@@ -247,14 +248,14 @@ export class IsolinesMeshing implements IAnimatedElement {
 	cellSize: number = 1;
 
 	nbTris: number = this.gridWidth * this.gridWidth * 2;
-	maxSubdiv: number = 60;
+	maxSubdiv: number = 60; // the max number of vertices generated per triangle. 60 is fine in most cases, but you can see holes appearing if the sliders are pushed
 	nbBaseVertices: number = this.nbTris * 3;
 	nbBaseNormals: number = this.nbTris * 3;
 	nbBigVertices: number = this.nbTris * this.maxSubdiv;
 	nbBigNormals: number = this.nbTris * this.maxSubdiv;
 	nbBigColors: number = this.nbTris * this.maxSubdiv;
 
-	nbSideQuads: number = (this.gridWidth - 1) * 4;
+	nbSideQuads: number = (this.gridWidth - 1) * 4; // a one tile margin to hide the jagged edge of the triangle tiling
 	nbSideVertices: number = this.nbSideQuads * 6;
 
 	sbaVertices: StorageBufferAttribute;
@@ -263,8 +264,6 @@ export class IsolinesMeshing implements IAnimatedElement {
 	sbaBigVertices: StorageBufferAttribute;
 	sbaBigNormals: StorageBufferAttribute;
 	sbaBigColors: StorageBufferAttribute;
-	sbaBigAO: StorageBufferAttribute;
-	sbaBigIndices: StorageBufferAttribute;
 
 	sbaSideVertices: StorageBufferAttribute;
 	sbaSideNormals: StorageBufferAttribute;
@@ -306,7 +305,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 
 		////// sides
 		// the sides should probably be done in the main compute, with the same treatment 
-		// but for now, this is an approximation
+		// but for now, this is a good enough approximation
 		this.sbaSideVertices = new StorageBufferAttribute(this.nbSideVertices, 4);
 		this.sbaSideNormals = new StorageBufferAttribute(this.nbSideVertices, 4);
 
@@ -358,8 +357,8 @@ export class IsolinesMeshing implements IAnimatedElement {
 	// runs for all triangles of the grid
 	computeTriangles = tslFn(() => {
 
-
 		const cellIndex = instanceIndex.div(2); // I'm treating them as slanted quads
+		// world offset
 		const px = cellIndex.remainder(this.gridWidth).toFloat().mul(this.cellSize).sub(float(this.gridWidth).mul(this.cellSize).mul(0.5));
 		const pz = cellIndex.div(this.gridWidth).toFloat().mul(this.cellSize).sub(float(this.gridWidth).mul(this.cellSize).mul(0.5));
 		const tri = instanceIndex.remainder(2).equal(0); // which side of the quad
@@ -414,7 +413,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 		const v2 = vec3(0.0).toVar().assign(v1Pos.xyz);
 		const v3 = vec3(0.0).toVar().assign(v2Pos.xyz);
 
-		// where in the buffers are we going to store the vertices for the triangle decomposition
+		// set where in the buffers are we going to store the vertices for the triangle decomposition
 		const startIndex = int(instanceIndex).mul(this.maxSubdiv);
 
 		// our buffers
@@ -423,10 +422,10 @@ export class IsolinesMeshing implements IAnimatedElement {
 		const colors = storage(this.sbaBigColors, 'vec4', this.sbaBigColors.count);
 
 		const nn = vec3(0.0).toVar();
-		const giMix = float(0.8); // for GI effect
-		const aoMul = float(0.3); // for AO  effect
+		const giMix = float(0.8); // for GI effect, could be a uniform
+		const aoMul = float(0.3); // for AO  effect, could be a uniform
 
-		const vIndex = int(startIndex).toVar();
+		const vIndex = int(startIndex).toVar(); 
 
 		loop({ type: 'uint', start: h_min, end: h_max, condition: '<=' }, ({ i }) => { // for each layer
 			const points_above = int(0).toVar();
@@ -616,6 +615,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 				});
 			});
 		});
+
 		// cleanup unused vertices
 		loop({ type: 'int', start: vIndex, end: startIndex.add(this.maxSubdiv), condition: '<' }, ({ i }) => {
 			positions.element(i).assign(vec4(0.0));
@@ -636,6 +636,7 @@ export class IsolinesMeshing implements IAnimatedElement {
 		*/
 
 	})().compute(this.nbTris);
+
 
 	// for all side quads
 	computeSides = tslFn(() => {
