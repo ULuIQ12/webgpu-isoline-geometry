@@ -39,7 +39,7 @@ To start the development environment for this project, follow these steps:
 2. Navigate to the project directory:
 
   ```bash
-  cd tsl-particles-of-a-thousand-faces
+  cd webgpu-isoline-geometry
   ```
 
 3. Install the dependencies:
