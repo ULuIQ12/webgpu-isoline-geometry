@@ -1,11 +1,9 @@
-import { Camera, Plane, Raycaster, Vector2, Vector3, WebGLRenderer } from "three";
-import { uniform } from "three/examples/jsm/nodes/Nodes.js";
-import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
+import { Camera, Plane, Raycaster, Vector2, Vector3, WebGPURenderer, uniform } from "three/webgpu";
 
 export class Pointer {
 
     camera:Camera;
-    renderer:WebGLRenderer|WebGPURenderer;
+    renderer:WebGPURenderer;
     rayCaster: Raycaster = new Raycaster();
     iPlane: Plane = new Plane(new Vector3(0, 0, 1));
     pointer: Vector2 = new Vector2();
@@ -14,7 +12,7 @@ export class Pointer {
     uPointerDown = uniform(0);
     uPointer = uniform(new Vector3());
 
-    constructor(renderer:WebGLRenderer|WebGPURenderer, camera: Camera) {
+    constructor(renderer:WebGPURenderer, camera: Camera) {
 
         this.camera = camera;
         this.renderer = renderer;

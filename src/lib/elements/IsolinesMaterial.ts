@@ -1,6 +1,6 @@
 // @ts-nocheck
 // cutting the Typescript linting for this file, as it seems a bit too strict for the TSL code
-import { abs, dot, float, If, MeshStandardNodeMaterial, mx_fractal_noise_vec3, normalLocal, normalView, oscSquare, positionWorld, ShaderNodeObject, tslFn, UniformNode, VarNode, vec3 } from "three/examples/jsm/nodes/Nodes.js";
+import { abs, dot, float, If, MeshStandardNodeMaterial, mx_fractal_noise_vec3, normalLocal, normalView, oscSquare, positionWorld, ShaderNodeObject, tslFn, UniformNode, VarNode, vec3 } from "three/webgpu";
 
 export class IsolinesMaterial extends MeshStandardNodeMaterial {
     uWireFrame:ShaderNodeObject<UniformNode<unknown>>;
@@ -37,9 +37,6 @@ export class IsolinesMaterial extends MeshStandardNodeMaterial {
         this.normalNode = this.customNormalNode();
         this.roughnessNode = this.uRoughness;
         this.metalnessNode = this.uMetalness;
-        //this.roughness = uRoughness;
-		//this.metalness = 0.1;
-
     }
 
     customColorNode = tslFn(() => {

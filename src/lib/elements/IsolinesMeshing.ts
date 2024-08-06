@@ -2,14 +2,12 @@
 // @ts-nocheck
 // cutting the Typescript linting for this file, as it seems a bit too strict for the TSL code
 import { IAnimatedElement } from "../interfaces/IAnimatedElement";
-import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
-import { BufferGeometry, DirectionalLight, DirectionalLightShadow, EquirectangularReflectionMapping,Group, Mesh, PerspectiveCamera, Plane, Scene, Vector3, Vector4 } from "three";
+import { WebGPURenderer, BufferGeometry, DirectionalLight, DirectionalLightShadow, EquirectangularReflectionMapping,Group, Mesh, PerspectiveCamera, Plane, Scene, Vector3, Vector4, StorageBufferAttribute } from "three/webgpu";
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { Root } from "../Root";
-import { loop, color, float, If, instanceIndex, max, MeshStandardNodeMaterial, min,mx_fractal_noise_float, pow, storage, sub, tslFn, uniform, uniforms, vec3, vec4, cond, int, mix, timerGlobal, positionWorld, mul, oscSine} from "three/examples/jsm/nodes/Nodes.js";
-import { OrbitControls, RGBELoader } from "three/examples/jsm/Addons.js";
+import { loop, color, float, If, instanceIndex, max, MeshStandardNodeMaterial, min,mx_fractal_noise_float, pow, storage, sub, tslFn, uniform, uniforms, vec3, vec4, cond, int, mix, timerGlobal, positionWorld, mul, oscSine} from "three/webgpu";
+import { OrbitControls, UltraHDRLoader } from "three/examples/jsm/Addons.js";
 import { Pointer } from "../utils/Pointer";
-import StorageBufferAttribute from "three/examples/jsm/renderers/common/StorageBufferAttribute.js";
 import { IsolinesMaterial } from "./IsolinesMaterial";
 import { Palettes } from "./Palettes";
 
@@ -45,9 +43,10 @@ export class IsolinesMeshing implements IAnimatedElement {
 		this.uNbColors.value = this.layerColors.array.length;
 
 		await this.initMesh();
-
-		// load the bg / envmap // https://polyhaven.com/a/table_mountain_2_puresky
-		const texture = await new RGBELoader().setPath('./assets/hdr/').loadAsync('table_mountain_2_puresky_2k.hdr', (progress) => {
+		
+		// load the bg / envmap // https://polyhaven.com/a/table_mountain_2_puresky 
+		// converted to Adobe Gain Map with https://gainmap-creator.monogrid.com/ 
+		const texture = await new UltraHDRLoader().setPath('./assets/ultrahdr/').loadAsync('table_mountain_2_puresky_2k.jpg', (progress) => {
 			console.log("Skybox load progress", Math.round(progress.loaded / progress.total * 100) + "%");
 		});
 		texture.mapping = EquirectangularReflectionMapping;

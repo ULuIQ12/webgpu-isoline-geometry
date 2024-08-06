@@ -39,10 +39,8 @@ export default function IntroModal({
                             <li><b>Right click</b> to pan the viewport</li>
                             <li><b>Wheel</b> to zoom</li>
                             <li>Press <b>SPACE</b> to toggle UI visibility</li>
-                        </div>
-                        
-                        <div className="pb-2">Play with the sliders, click the buttons, and Have fun!</div>
-                    
+                        </div>                        
+                        <div className="pb-2">Play with the sliders, click the buttons, and Have fun!</div>                    
                     </div>
                 }
                 { !hasWebGPU && 

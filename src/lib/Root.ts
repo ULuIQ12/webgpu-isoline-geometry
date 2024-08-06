@@ -1,10 +1,6 @@
-import { ACESFilmicToneMapping, Clock, PerspectiveCamera, Scene, Vector2, Vector3 } from "three";
+import { WebGPURenderer, PostProcessing, ACESFilmicToneMapping, Clock, PerspectiveCamera, Scene, Vector2, Vector3, pass, uniform, viewportTopLeft } from "three/webgpu";
 import { OrbitControls, TrackballControls } from "three/examples/jsm/Addons.js";
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
-import PostProcessing from "three/examples/jsm/renderers/common/PostProcessing.js";
-import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
-import { pass, uniform, viewportTopLeft } from "three/examples/jsm/nodes/Nodes.js";
-
 import { IAnimatedElement } from "./interfaces/IAnimatedElement";
 import { IsolinesMeshing } from "./elements/IsolinesMeshing";
 
