@@ -80,6 +80,7 @@ This will create an optimized build of the project in the `dist` directory.
 ## Resources 
 - Three.js WebGPU examples : https://threejs.org/examples/?q=webgpu
 - Three.js TSL documentation : https://github.com/mrdoob/three.js/wiki/Three.js-Shading-Language
+- HDR/EXR tp UltraHDR converter : https://gainmap-creator.monogrid.com/ 
 
 
 
